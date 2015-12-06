@@ -1,7 +1,27 @@
 "use strict";
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+    game.load.image('f22', 'img/F22T.png');
+    game.load.image('grass', 'img/grass.jpg');
+    game.load.image('explosion', 'img/explosion.png');
+    game.load.image('missile', 'img/missile.png');
+    game.load.image('su2', 'img/SU2.png');
+}
+
+function create() {
+	game.add.tileSprite(0, 0, 216, 216, 'grass');
+	game.add.sprite(0, 0, 'f22');
+}
+
+function update() {
+}
+
+/*
 var gamejs = require('gamejs');
 
-gamejs.preload(["F22T.png", "grass.jpg"]);
+gamejs.preload(["img/F22T.png", "img/grass.jpg"]);
 
 function SpriteObject(worldSize, center, angle, image, rotation=0, scale=1) {
     this.worldSize = worldSize;
@@ -38,7 +58,7 @@ SpriteObject.prototype.blit = function(display, viewCtr) {
 };
 
 function blitBackground(screen, viewCtr) {
-    var image = gamejs.image.load('grass.jpg');
+    var image = gamejs.image.load('img/grass.jpg');
     var imgSize = image.getSize();
     var scrSize = screen.getSize();
 
@@ -63,7 +83,7 @@ function main() {
 
    var worldSize = [10000, 10000];
 
-   var airplane = new SpriteObject(worldSize, [0, 0], 0, 'F22T.png');
+   var airplane = new SpriteObject(worldSize, [0, 0], 0, 'img/F22T.png');
    airplane.turningL = false;
    airplane.turningR = false;
    airplane.thrust = false;
@@ -107,3 +127,4 @@ function main() {
 
 // call main after all resources have finished loading
 gamejs.ready(main);
+*/

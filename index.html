@@ -2,37 +2,14 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <style type=text/css>
-        body{
-           background:#fff;
-           color:#222;
-           margin:0px;
-           padding:0px;
-        }
-        #gjs-canvas {
-            border: 1px solid #ccc;
-            margin: 20px;
-            box-shadow: 14px 10px 30px 0px rgba(50, 50, 50, 0.75);
-            width: calc(100% - 40px);
-            height: calc(100% - 60px);
-            position: absolute;
-            /** automatically made visible once game is loaded **/
-            display:none;
-        }
-        .footer {
-            position:absolute;
-            top: calc(100% - 50px);
+    <style type="text/css">
+        body {
+            margin: 0;
         }
     </style>
-    <script src="gamejs/gamejs-2.0.1.js"></script>
-    <script>
-        require.setModuleRoot('./');
-        require.run('main')
-    </script>
+    <script src="https://github.com/photonstorm/phaser/releases/download/v2.4.4/phaser.min.js"></script>
 </head>
 <body>
-    <div>
-        <canvas id="gjs-canvas"></canvas>
-    </div>
+    <script src="main.js"></script>
 </body>
 </html>
