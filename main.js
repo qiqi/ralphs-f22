@@ -1,6 +1,14 @@
 "use strict";
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var worldSize = [32*320, 32*320];
+var screenSize = [1200, 800];
+
+var game = new Phaser.Game(screenSize[0], screenSize[1], Phaser.AUTO, '', {
+    preload: preload,
+    create: create,
+    update: update,
+    render: render
+});
 
 function preload() {
     game.load.image('f22', 'img/F22T.png');
@@ -10,12 +18,83 @@ function preload() {
     game.load.image('su2', 'img/SU2.png');
 }
 
+var f22 = {}, bgTile, key = {}, missiles = [];
+
 function create() {
-	game.add.tileSprite(0, 0, 216, 216, 'grass');
-	game.add.sprite(0, 0, 'f22');
+    var bgImg = 'grass';
+    var xs = screenSize[0] + 512, ys = screenSize[0] + 512;
+    game.world.setBounds(-xs, -ys, xs*2, ys*2);
+    game.physics.startSystem(Phaser.Physics.P2JS);
+
+	bgTile = game.add.tileSprite(-xs, -ys, xs*2, ys*2, bgImg);
+	f22.sprite = game.add.sprite(0, 0, 'f22');
+    f22.sprite.scale.setTo(0.5, 0.5);
+    game.physics.p2.enable(f22.sprite);
+    f22.speed = 500;
+    f22.body = f22.sprite.body;
+    game.camera.follow(f22.sprite);
+
+    key.Up = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+    key.Down = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
+    key.Left = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
+    key.Right = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+    key.Bar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 }
 
 function update() {
+    var xs = screenSize[0] + 512, ys = screenSize[0] + 512;
+    game.world.setBounds(f22.body.x - xs, f22.body.y - ys, xs*2, ys*2);
+    bgTile.x = Math.floor(f22.body.x / 512) * 512 - xs;
+    bgTile.y = Math.floor(f22.body.y / 512) * 512 - ys;
+
+    var angle = f22.body.angle * Math.PI / 180;
+    f22.body.velocity.x = Math.cos(angle) * f22.speed;
+    f22.body.velocity.y = Math.sin(angle) * f22.speed;
+
+    var targetSpd;
+    if (key.Up.isDown && !key.Down.isDown) {
+        targetSpd = 1000;
+    } else if (key.Down.isDown && !key.Up.isDown) {
+        targetSpd = 250;
+    } else {
+        targetSpd = 500;
+    }
+    f22.speed += (targetSpd - f22.speed) * 0.01;
+
+    var targetAV;
+    if (key.Left.isDown && !key.Right.isDown) {
+        targetAV = -Math.pow(500 / f22.speed, 2);
+    } else if (key.Right.isDown && !key.Left.isDown) {
+        targetAV = +Math.pow(500 / f22.speed, 2);
+    } else {
+        targetAV = 0;
+    }
+    f22.body.angularVelocity += (targetAV - f22.body.angularVelocity) * 0.04;
+
+    if (key.Bar.isDown) {
+        var dist;
+        if (missiles.length == 0) {
+            dist = 10000;
+        } else {
+            var dx = f22.body.x - missiles[0].body.x;
+            var dy = f22.body.y - missiles[0].body.y;
+            dist = Math.sqrt(dx * dx - dy * dy);
+        }
+
+        if (dist > 400) {
+	        missiles.unshift(game.add.sprite(0, 0, 'missile'));
+            missiles[0].scale.setTo(0.1, 0.1);
+            game.physics.p2.enable(missiles[0]);
+            missiles[0].body.x = f22.sprite.body.x + Math.cos(angle) * 64;
+            missiles[0].body.y = f22.sprite.body.y + Math.sin(angle) * 64;
+            missiles[0].body.angle = f22.sprite.angle;
+            missiles[0].body.velocity.x = Math.cos(angle) * 1100;
+            missiles[0].body.velocity.y = Math.sin(angle) * 1100;
+        }
+    }
+}
+
+function render() {
 }
 
 /*
