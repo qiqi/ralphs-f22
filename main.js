@@ -18,7 +18,7 @@ function preload() {
     game.load.image('su2', 'img/SU2.png');
 }
 
-var f22 = {}, bgTile, key = {}, missiles = [];
+var f22 = {}, bgTile, key = {}, gy = {}, missiles = [];
 
 function create() {
     var bgImg = 'grass';
@@ -39,6 +39,48 @@ function create() {
     key.Left = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
     key.Right = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     key.Bar = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+    gyro.frequency = 50;
+    gyro.startTracking(function(o){
+        key = null;
+        gy.x = o.x;
+        gy.y = o.y;
+        console.log(gy.x, gy.y);
+    });
+}
+
+function gyroSpeed() {
+    var spd = [250, 1000];
+    var acc = [9.8, 0];
+    if (gy.y < acc[1]) gy.y = acc[1];
+    if (gy.y > acc[0]) gy.y = acc[0];
+    return (gy.y - acc[0]) / (acc[1] - acc[0]) * (spd[1] - spd[0]) + spd[0];
+}
+
+function keySpeed() {
+    if (key.Up.isDown && !key.Down.isDown) {
+        return 1000;
+    } else if (key.Down.isDown && !key.Up.isDown) {
+        return 250;
+    } else {
+        return 500;
+    }
+}
+
+function gyroTurn() {
+    if (gy.x < -4) gy.x = -4;
+    if (gy.x > +4) gy.x = +4;
+    return -gy.x / 3;
+}
+
+function keyTurn() {
+    if (key.Left.isDown && !key.Right.isDown) {
+        return -1;
+    } else if (key.Right.isDown && !key.Left.isDown) {
+        return +1;
+    } else {
+        return 0;
+    }
 }
 
 function update() {
@@ -52,26 +94,17 @@ function update() {
     f22.body.velocity.y = Math.sin(angle) * f22.speed;
 
     var targetSpd;
-    if (key.Up.isDown && !key.Down.isDown) {
-        targetSpd = 1000;
-    } else if (key.Down.isDown && !key.Up.isDown) {
-        targetSpd = 250;
-    } else {
-        targetSpd = 500;
-    }
+    if (key) targetSpd = keySpeed();
+    else targetSpd = gyroSpeed();
     f22.speed += (targetSpd - f22.speed) * 0.01;
 
-    var targetAV;
-    if (key.Left.isDown && !key.Right.isDown) {
-        targetAV = -Math.pow(500 / f22.speed, 2);
-    } else if (key.Right.isDown && !key.Left.isDown) {
-        targetAV = +Math.pow(500 / f22.speed, 2);
-    } else {
-        targetAV = 0;
-    }
-    f22.body.angularVelocity += (targetAV - f22.body.angularVelocity) * 0.04;
+    var targetTurn;
+    if (key) targetTurn = keyTurn();
+    else targetTurn = gyroTurn();
+    targetTurn *= Math.pow(500 / f22.speed, 2);
+    f22.body.angularVelocity += (targetTurn - f22.body.angularVelocity) * 0.04;
 
-    if (key.Bar.isDown) {
+    if (key && key.Bar.isDown) {
         var dist;
         if (missiles.length == 0) {
             dist = 10000;
